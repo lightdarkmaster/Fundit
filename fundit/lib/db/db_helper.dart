@@ -33,7 +33,8 @@ class DBHelper {
             saved REAL NOT NULL,
             imagePath TEXT,
             createdAt TEXT,
-            description TEXT
+            description TEXT,
+            priority TEXT
           )
         ''');
       },

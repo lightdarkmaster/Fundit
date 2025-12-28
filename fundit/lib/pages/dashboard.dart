@@ -21,6 +21,7 @@ class _DashboardPageState extends State<DashboardPage> {
   double totalSaved = 0;
   double totalPrice = 0;
   double totalRemaining = 0;
+  double totalCompleted = 0;
 
   @override
   void initState() {
@@ -38,6 +39,10 @@ class _DashboardPageState extends State<DashboardPage> {
     totalSaved = goals.fold(0, (sum, goal) => sum + goal.saved);
     totalPrice = goals.fold(0, (sum, goal) => sum + goal.price);
     totalRemaining = goals.fold(0, (sum, goal) => sum + goal.remaining);
+    totalCompleted = goals
+        .where((goal) => goal.saved >= goal.price)
+        .length
+        .toDouble();
   }
 
   @override
@@ -99,6 +104,20 @@ class _DashboardPageState extends State<DashboardPage> {
                           titleColor: Colors.orange.shade800,
                           valueColor: Colors.orange.shade900,
                           isPercentage: true,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _summaryCard(
+                          title: 'Goals Completed',
+                          amount: totalCompleted,
+                          cardColor: const Color.fromARGB(255, 227, 242, 253),
+                          titleColor: Colors.purple.shade800,
+                          valueColor: Colors.purple.shade900,
+                          isInteger: true,
                         ),
                       ],
                     ),

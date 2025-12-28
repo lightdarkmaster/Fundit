@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:fundit/utils/priority_utils.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:fundit/db/db_helper.dart';
 import 'package:fundit/models/goal_model.dart';
@@ -28,6 +29,8 @@ class _AddGoalPageState extends State<AddGoalPage> {
     'MMMM d, y (EEEE, hh:mma)',
   ).format(DateTime.now()).toLowerCase();
   final descriptionController = TextEditingController();
+  String selectedPriority = 'Low';
+  final List<String> priorities = ['Low', 'Medium', 'High'];
 
   @override
   void initState() {
@@ -42,6 +45,7 @@ class _AddGoalPageState extends State<AddGoalPage> {
         imageFile = File(widget.goal!.imagePath!);
       }
       descriptionController.text = widget.goal!.description ?? '';
+      selectedPriority = widget.goal!.priority ?? 'Low';
     }
   }
 
@@ -127,6 +131,39 @@ class _AddGoalPageState extends State<AddGoalPage> {
                         ),
                       ),
                       const SizedBox(height: 16),
+
+                      DropdownButtonFormField<String>(
+                        value: selectedPriority,
+                        decoration: const InputDecoration(
+                          labelText: 'Priority Level',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: priorities.map((priority) {
+                          return DropdownMenuItem(
+                            value: priority,
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 10,
+                                  height: 10,
+                                  margin: const EdgeInsets.only(right: 8),
+                                  decoration: BoxDecoration(
+                                    color: getPriorityColor(priority),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                Text(priority),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedPriority = value!;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 16),
                       TextField(
                         controller: descriptionController,
                         decoration: const InputDecoration(
@@ -170,6 +207,7 @@ class _AddGoalPageState extends State<AddGoalPage> {
                       description: descriptionController.text.isNotEmpty
                           ? descriptionController.text
                           : null,
+                      priority: selectedPriority,
                     );
 
                     if (isEditing) {

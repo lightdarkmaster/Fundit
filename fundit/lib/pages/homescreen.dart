@@ -9,10 +9,6 @@ import 'add_goal_page.dart';
 import 'goal_detail_page.dart';
 import 'package:intl/intl.dart';
 
-import 'package:fundit/db/db_helper.dart';
-import 'package:fundit/models/goal_model.dart';
-import 'package:fundit/models/history_entry_model.dart';
-
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key});
 
@@ -66,6 +62,20 @@ class _HomescreenState extends State<Homescreen> {
 
     if (updated != null) {
       await _loadGoals();
+    }
+  }
+
+  // Helper function to get color based on priority
+  Color getPriorityColor(String priority) {
+    switch (priority.toLowerCase()) {
+      case 'high':
+        return Colors.redAccent;
+      case 'medium':
+        return Colors.orangeAccent;
+      case 'low':
+        return Colors.green;
+      default:
+        return Colors.grey;
     }
   }
 
@@ -156,137 +166,170 @@ class _HomescreenState extends State<Homescreen> {
                       final percentColor =
                           percentageColors[index % percentageColors.length];
 
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(20),
-                          onTap: () async {
-                            final updated = await Navigator.push<Goal?>(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => GoalDetailPage(goal: goal),
-                              ),
-                            );
+                      // Wrap Card in a Stack to add priority banner
+                      return Stack(
+                        children: [
+                          Card(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(20),
+                              onTap: () async {
+                                final updated = await Navigator.push<Goal?>(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => GoalDetailPage(goal: goal),
+                                  ),
+                                );
 
-                            if (updated != null) {
-                              await _loadGoals();
-                            }
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                if (updated != null) {
+                                  await _loadGoals();
+                                }
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            '${goal.name} (₱ ${pesoFormatter.format(goal.price)})',
-                                            style: const TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                '${goal.name} (₱ ${pesoFormatter.format(goal.price)})',
+                                                style: const TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                    PopupMenuButton<String>(
-                                      onSelected: (value) {
-                                        if (value == 'edit') {
-                                          _editGoal(goal);
-                                        } else if (value == 'delete') {
-                                          _deleteGoal(goal.id!);
-                                        }
-                                      },
-                                      itemBuilder: (context) => [
-                                        const PopupMenuItem(
-                                          value: 'edit',
-                                          child: Text('Edit'),
                                         ),
-                                        const PopupMenuItem(
-                                          value: 'delete',
-                                          child: Text('Delete'),
+                                        PopupMenuButton<String>(
+                                          onSelected: (value) {
+                                            if (value == 'edit') {
+                                              _editGoal(goal);
+                                            } else if (value == 'delete') {
+                                              _deleteGoal(goal.id!);
+                                            }
+                                          },
+                                          itemBuilder: (context) => const [
+                                            PopupMenuItem(
+                                              value: 'edit',
+                                              child: Text('Edit'),
+                                            ),
+                                            PopupMenuItem(
+                                              value: 'delete',
+                                              child: Text('Delete'),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
+                                    const SizedBox(height: 8),
+
+                                    // Progress bar with unique color and percentage
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: LinearProgressIndicator(
+                                            value: progress,
+                                            minHeight: 8,
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            backgroundColor: progressColor
+                                                .withOpacity(0.3),
+                                            color: progressColor,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          '${(progress * 100).toStringAsFixed(0)}%',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: percentColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('Saved: '),
+                                        Text(
+                                          '₱${pesoFormatter.format(goal.saved)}',
+                                          style: const TextStyle(
+                                            color: Colors.green,
+                                          ),
+                                        ),
+                                        Text('Remaining: '),
+                                        Text(
+                                          '₱${pesoFormatter.format(goal.remaining)}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.red,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+
+                                    if (goal.createdAt != null)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4),
+                                        child: Text(
+                                          'Created: ${DateFormat('MMMM d, y (EEEE, hh:mma)').format(goal.createdAt!).toLowerCase()}',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: Colors.grey.shade600,
+                                          ),
+                                        ),
+                                      ),
                                   ],
                                 ),
-                                const SizedBox(height: 8),
-
-                                // Progress bar with unique color and percentage
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: LinearProgressIndicator(
-                                        value: progress,
-                                        minHeight: 8,
-                                        borderRadius: BorderRadius.circular(8),
-                                        backgroundColor: progressColor
-                                            .withOpacity(0.3),
-                                        color: progressColor,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      '${(progress * 100).toStringAsFixed(0)}%',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: percentColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('Saved: '),
-                                    Text(
-                                      '₱${pesoFormatter.format(goal.saved)}',
-                                      style: const TextStyle(
-                                        color: Colors.green,
-                                      ),
-                                    ),
-                                    Text('Remaining: '),
-                                    Text(
-                                      '₱${pesoFormatter.format(goal.remaining)}',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.red,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-
-                                if (goal.createdAt != null)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 4),
-                                    child: Text(
-                                      'Created: ${DateFormat('MMMM d, y (EEEE, hh:mma)').format(goal.createdAt!).toLowerCase()}',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: Colors.grey.shade600,
-                                      ),
-                                    ),
-                                  ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
+
+                          // Priority banner at top-right corner
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: getPriorityColor(goal.priority ?? ''),
+                                borderRadius: const BorderRadius.only(
+                                  topRight: Radius.circular(20),
+                                  bottomLeft: Radius.circular(20),
+                                ),
+                              ),
+                              child: Text(
+                                (goal.priority ?? '').toUpperCase(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       );
                     },
                   ),
