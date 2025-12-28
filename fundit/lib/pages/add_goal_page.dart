@@ -1,9 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:fundit/pages/db_helper.dart';
-import 'package:fundit/pages/goal_model.dart';
+import 'package:fundit/db/db_helper.dart';
+import 'package:fundit/models/goal_model.dart';
 import 'package:intl/intl.dart';
+
+import 'package:fundit/db/db_helper.dart';
+import 'package:fundit/models/goal_model.dart';
 
 class AddGoalPage extends StatefulWidget {
   final Goal? goal; // nullable for new goal
@@ -108,7 +111,7 @@ class _AddGoalPageState extends State<AddGoalPage> {
                         controller: priceController,
                         keyboardType: TextInputType.number,
                         decoration: const InputDecoration(
-                          labelText: 'Product Price',
+                          labelText: 'Price',
                           prefixText: '₱ ',
                         ),
                       ),

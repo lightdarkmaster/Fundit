@@ -1,8 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:fundit/pages/goal_model.dart';
-import 'package:fundit/pages/db_helper.dart';
+import 'package:fundit/models/goal_model.dart';
+import 'package:fundit/db/db_helper.dart';
 import 'package:intl/intl.dart';
+
+import 'package:fundit/db/db_helper.dart';
+import 'package:fundit/models/goal_model.dart';
 
 class GoalDetailPage extends StatefulWidget {
   final Goal goal;
