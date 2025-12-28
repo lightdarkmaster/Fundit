@@ -30,7 +30,7 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Goal Details')),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [

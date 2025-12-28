@@ -56,19 +56,23 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Summary Cards
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         _summaryCard(
                           title: 'Total Savings',
                           amount: totalSaved,
-                          color: const Color.fromARGB(255, 0, 119, 50),
+                          cardColor: const Color.fromARGB(255, 232, 245, 233),
+                          titleColor: Colors.green.shade800,
+                          valueColor: Colors.green.shade900,
                         ),
+                        const SizedBox(width: 12),
                         _summaryCard(
                           title: 'Total Remaining',
                           amount: totalRemaining,
-                          color: const Color.fromARGB(255, 123, 0, 0),
+                          cardColor: const Color.fromARGB(255, 255, 235, 238),
+                          titleColor: Colors.red.shade800,
+                          valueColor: Colors.red.shade900,
                         ),
                       ],
                     ),
@@ -79,17 +83,23 @@ class _DashboardPageState extends State<DashboardPage> {
                         _summaryCard(
                           title: 'Number of Goals',
                           amount: goals.length.toDouble(),
-                          color: const Color.fromARGB(255, 0, 41, 154),
+                          cardColor: const Color.fromARGB(255, 227, 242, 253),
+                          titleColor: Colors.blue.shade800,
+                          valueColor: Colors.blue.shade900,
                           isInteger: true,
                         ),
+                        const SizedBox(width: 12),
                         _summaryCard(
                           title: 'Overall Progress',
                           amount: overallProgress * 100,
-                          color: const Color.fromARGB(255, 136, 59, 0),
+                          cardColor: const Color.fromARGB(255, 255, 243, 224),
+                          titleColor: Colors.orange.shade800,
+                          valueColor: Colors.orange.shade900,
                           isPercentage: true,
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 24),
 
                     // Progress Bars per Goal
@@ -98,6 +108,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: Colors.black,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -123,7 +134,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                     goal.name,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      color: vibrantColor,
+                                      color: Colors.black,
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -132,7 +143,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                   '${(progress * 100).toStringAsFixed(0)}%',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: vibrantColor,
+                                    color: Colors.black,
                                   ),
                                 ),
                               ],
@@ -142,12 +153,18 @@ class _DashboardPageState extends State<DashboardPage> {
                               value: progress,
                               minHeight: 10,
                               color: vibrantColor,
-                              backgroundColor: vibrantColor.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(5),
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                218,
+                                204,
+                                204,
+                              ),
                             ),
                           ],
                         ),
                       );
-                    }).toList(),
+                    }),
 
                     const SizedBox(height: 24),
 
@@ -249,8 +266,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                 showTitles: true,
                                 getTitlesWidget: (value, meta) {
                                   int index = value.toInt();
-                                  if (index < 0 || index >= goals.length)
+                                  if (index < 0 || index >= goals.length) {
                                     return const SizedBox.shrink();
+                                  }
                                   return SideTitleWidget(
                                     meta: meta,
                                     space: 4,
@@ -316,8 +334,9 @@ class _DashboardPageState extends State<DashboardPage> {
                                 showTitles: true,
                                 getTitlesWidget: (value, meta) {
                                   int index = value.toInt();
-                                  if (index < 0 || index >= goals.length)
+                                  if (index < 0 || index >= goals.length) {
                                     return const SizedBox.shrink();
+                                  }
                                   return SideTitleWidget(
                                     meta: meta,
                                     space: 4,
@@ -350,13 +369,15 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _summaryCard({
     required String title,
     required double amount,
-    required Color color,
-    bool isPercentage = false,
+    required Color cardColor,
+    Color titleColor = Colors.white,
+    Color valueColor = Colors.white,
     bool isInteger = false,
+    bool isPercentage = false,
   }) {
     return Expanded(
       child: Card(
-        color: color.withOpacity(0.2),
+        color: cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -367,8 +388,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 title,
                 style: TextStyle(
                   fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: color,
+                  color: titleColor,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 8),
@@ -377,11 +398,11 @@ class _DashboardPageState extends State<DashboardPage> {
                     ? '${amount.toStringAsFixed(0)}%'
                     : isInteger
                     ? amount.toInt().toString()
-                    : '₱${pesoFormatter.format(amount)}',
+                    : '₱ ${pesoFormatter.format(amount)}',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: color,
+                  color: valueColor,
                 ),
               ),
             ],

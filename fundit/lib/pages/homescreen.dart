@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fundit/pages/dashboard.dart';
 import 'package:fundit/pages/db_helper.dart';
 import 'package:fundit/pages/goal_model.dart';
-import 'package:path/path.dart';
 import 'add_goal_page.dart';
 import 'goal_detail_page.dart';
 import 'package:intl/intl.dart';
@@ -51,10 +50,9 @@ class _HomescreenState extends State<Homescreen> {
   }
 
   void _editGoal(Goal goal) async {
-    // Open AddGoalPage with existing goal data
     final updated = await Navigator.push<Goal?>(
-      context as BuildContext,
-      MaterialPageRoute(builder: (_) => AddGoalPage()),
+      context,
+      MaterialPageRoute(builder: (_) => AddGoalPage(goal: goal)),
     );
 
     if (updated != null) {
@@ -84,20 +82,20 @@ class _HomescreenState extends State<Homescreen> {
 
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          // Open AddGoalPage without passing a goal (for creating new)
-          await Navigator.push<Goal?>(
+          final newGoal = await Navigator.push<Goal?>(
             context,
-            MaterialPageRoute(builder: (_) => AddGoalPage()),
+            MaterialPageRoute(builder: (_) => const AddGoalPage()),
           );
-          await _loadGoals();
+
+          if (newGoal != null) {
+            await _loadGoals();
+          }
         },
-        icon: const Icon(
-          Icons.add,
-          color: Colors.white, // Set the icon color here
-        ),
+        icon: const Icon(Icons.add, color: Colors.white),
         label: const Text('Add Goal', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.lightBlue,
       ),
+
       body: goals.isEmpty
           ? const Center(
               child: Text(

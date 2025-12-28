@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'goal_model.dart';
 import 'package:path/path.dart';
+import 'package:path/path.dart' as p;
 
 class DBHelper {
   static final DBHelper instance = DBHelper._init();
@@ -15,7 +16,7 @@ class DBHelper {
   }
 
   Future<Database> _initDB() async {
-    final path = join(await getDatabasesPath(), 'goals.db');
+    final path = p.join(await getDatabasesPath(), 'goals.db');
 
     return await openDatabase(
       path,

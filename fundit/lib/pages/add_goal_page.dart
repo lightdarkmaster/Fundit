@@ -6,7 +6,9 @@ import 'package:fundit/pages/goal_model.dart';
 import 'package:intl/intl.dart';
 
 class AddGoalPage extends StatefulWidget {
-  const AddGoalPage({super.key});
+  final Goal? goal; // nullable for new goal
+
+  const AddGoalPage({super.key, this.goal});
 
   @override
   State<AddGoalPage> createState() => _AddGoalPageState();
@@ -18,14 +20,27 @@ class _AddGoalPageState extends State<AddGoalPage> {
   final savedController = TextEditingController();
   File? imageFile;
   final NumberFormat pesoFormatter = NumberFormat('#,##0.00', 'en_PH');
-
   final ImagePicker picker = ImagePicker();
 
+  @override
+  void initState() {
+    super.initState();
+
+    // Pre-fill fields if editing
+    if (widget.goal != null) {
+      nameController.text = widget.goal!.name;
+      priceController.text = widget.goal!.price.toString();
+      savedController.text = widget.goal!.saved.toString();
+      if (widget.goal!.imagePath != null) {
+        imageFile = File(widget.goal!.imagePath!);
+      }
+    }
+  }
+
   Future<void> pickImage() async {
-    final XFile? pickedFile = await ImagePicker().pickImage(
+    final XFile? pickedFile = await picker.pickImage(
       source: ImageSource.gallery,
     );
-
     if (pickedFile != null) {
       setState(() {
         imageFile = File(pickedFile.path);
@@ -35,8 +50,10 @@ class _AddGoalPageState extends State<AddGoalPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isEditing = widget.goal != null;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('New Goal')),
+      appBar: AppBar(title: Text(isEditing ? 'Edit Goal' : 'New Goal')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -110,6 +127,12 @@ class _AddGoalPageState extends State<AddGoalPage> {
                 width: double.infinity,
                 height: 52,
                 child: FilledButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.lightBlue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
                   onPressed: () async {
                     if (nameController.text.isEmpty ||
                         priceController.text.isEmpty ||
@@ -122,15 +145,21 @@ class _AddGoalPageState extends State<AddGoalPage> {
                       return;
                     }
 
-                    final goal = Goal(
+                    final goalToSave = Goal(
+                      id: widget.goal?.id, // important for editing
                       name: nameController.text,
                       price: double.tryParse(priceController.text) ?? 0,
                       saved: double.tryParse(savedController.text) ?? 0,
                       imagePath: imageFile?.path,
                     );
 
-                    await DBHelper.instance.insertGoal(goal);
-                    Navigator.pop(context);
+                    if (isEditing) {
+                      await DBHelper.instance.updateGoal(goalToSave);
+                    } else {
+                      await DBHelper.instance.insertGoal(goalToSave);
+                    }
+
+                    Navigator.pop(context, goalToSave); // return goal
                   },
                   child: const Text('Save Goal'),
                 ),
