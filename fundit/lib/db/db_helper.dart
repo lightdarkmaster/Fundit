@@ -32,7 +32,8 @@ class DBHelper {
             price REAL NOT NULL,
             saved REAL NOT NULL,
             imagePath TEXT,
-            createdAt TEXT
+            createdAt TEXT,
+            description TEXT
           )
         ''');
       },

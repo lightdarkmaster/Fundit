@@ -27,6 +27,7 @@ class _AddGoalPageState extends State<AddGoalPage> {
   final String timestamp = DateFormat(
     'MMMM d, y (EEEE, hh:mma)',
   ).format(DateTime.now()).toLowerCase();
+  final descriptionController = TextEditingController();
 
   @override
   void initState() {
@@ -40,6 +41,7 @@ class _AddGoalPageState extends State<AddGoalPage> {
       if (widget.goal!.imagePath != null) {
         imageFile = File(widget.goal!.imagePath!);
       }
+      descriptionController.text = widget.goal!.description ?? '';
     }
   }
 
@@ -124,6 +126,13 @@ class _AddGoalPageState extends State<AddGoalPage> {
                           prefixText: '₱ ',
                         ),
                       ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: descriptionController,
+                        decoration: const InputDecoration(
+                          labelText: 'Description (Optional)',
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -158,6 +167,9 @@ class _AddGoalPageState extends State<AddGoalPage> {
                       saved: double.tryParse(savedController.text) ?? 0,
                       imagePath: imageFile?.path,
                       createdAt: DateTime.now(),
+                      description: descriptionController.text.isNotEmpty
+                          ? descriptionController.text
+                          : null,
                     );
 
                     if (isEditing) {
