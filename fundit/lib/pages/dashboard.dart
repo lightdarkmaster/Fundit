@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:fundit/pages/db_helper.dart';
-import 'package:fundit/pages/goal_model.dart';
+import 'package:fundit/db/db_helper.dart';
+import 'package:fundit/models/goal_model.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+
+import 'package:fundit/db/db_helper.dart';
+import 'package:fundit/models/goal_model.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});

@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:fundit/pages/about_page.dart';
 import 'package:fundit/pages/dashboard.dart';
-import 'package:fundit/pages/db_helper.dart';
-import 'package:fundit/pages/goal_model.dart';
-import 'package:fundit/pages/history_entry_model.dart';
+import 'package:fundit/db/db_helper.dart';
+import 'package:fundit/models/goal_model.dart';
+import 'package:fundit/models/history_entry_model.dart';
 import 'package:fundit/pages/history_page.dart';
 import 'add_goal_page.dart';
 import 'goal_detail_page.dart';
 import 'package:intl/intl.dart';
+
+import 'package:fundit/db/db_helper.dart';
+import 'package:fundit/models/goal_model.dart';
+import 'package:fundit/models/history_entry_model.dart';
 
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key});

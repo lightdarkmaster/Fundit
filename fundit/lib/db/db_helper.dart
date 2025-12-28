@@ -1,7 +1,10 @@
 import 'package:sqflite/sqflite.dart';
-import 'goal_model.dart';
+import '../models/goal_model.dart';
 import 'package:path/path.dart';
 import 'package:path/path.dart' as p;
+
+import 'package:fundit/models/goal_model.dart';
+import 'package:fundit/models/history_entry_model.dart';
 
 class DBHelper {
   static final DBHelper instance = DBHelper._init();
@@ -29,7 +32,8 @@ class DBHelper {
             price REAL NOT NULL,
             saved REAL NOT NULL,
             imagePath TEXT,
-            createdAt TEXT
+            createdAt TEXT,
+            description TEXT
           )
         ''');
       },

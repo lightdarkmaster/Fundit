@@ -1,8 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:fundit/pages/goal_model.dart';
-import 'package:fundit/pages/db_helper.dart';
+import 'package:fundit/models/goal_model.dart';
+import 'package:fundit/db/db_helper.dart';
 import 'package:intl/intl.dart';
+
+import 'package:fundit/db/db_helper.dart';
+import 'package:fundit/models/goal_model.dart';
 
 class GoalDetailPage extends StatefulWidget {
   final Goal goal;
@@ -95,6 +98,10 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                     const SizedBox(height: 24),
                     _row('Price', goal.price),
                     _row('Saved', goal.saved),
+                    _rowText(
+                      'Description',
+                      goal.description ?? 'No description',
+                    ),
                     const Divider(height: 32),
                     _row('Remaining', goal.remaining, highlight: true),
 
@@ -141,6 +148,28 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
             style: TextStyle(
               fontWeight: highlight ? FontWeight.bold : FontWeight.normal,
               color: highlight ? Colors.green : null,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _rowText(String label, String text, {bool highlight = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label),
+          Flexible(
+            child: Text(
+              text,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontWeight: highlight ? FontWeight.bold : FontWeight.normal,
+                color: highlight ? Colors.green : null,
+              ),
             ),
           ),
         ],

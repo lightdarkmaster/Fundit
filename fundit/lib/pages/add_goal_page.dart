@@ -1,9 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:fundit/pages/db_helper.dart';
-import 'package:fundit/pages/goal_model.dart';
+import 'package:fundit/db/db_helper.dart';
+import 'package:fundit/models/goal_model.dart';
 import 'package:intl/intl.dart';
+
+import 'package:fundit/db/db_helper.dart';
+import 'package:fundit/models/goal_model.dart';
 
 class AddGoalPage extends StatefulWidget {
   final Goal? goal; // nullable for new goal
@@ -24,6 +27,7 @@ class _AddGoalPageState extends State<AddGoalPage> {
   final String timestamp = DateFormat(
     'MMMM d, y (EEEE, hh:mma)',
   ).format(DateTime.now()).toLowerCase();
+  final descriptionController = TextEditingController();
 
   @override
   void initState() {
@@ -37,6 +41,7 @@ class _AddGoalPageState extends State<AddGoalPage> {
       if (widget.goal!.imagePath != null) {
         imageFile = File(widget.goal!.imagePath!);
       }
+      descriptionController.text = widget.goal!.description ?? '';
     }
   }
 
@@ -108,7 +113,7 @@ class _AddGoalPageState extends State<AddGoalPage> {
                         controller: priceController,
                         keyboardType: TextInputType.number,
                         decoration: const InputDecoration(
-                          labelText: 'Product Price',
+                          labelText: 'Price',
                           prefixText: '₱ ',
                         ),
                       ),
@@ -119,6 +124,13 @@ class _AddGoalPageState extends State<AddGoalPage> {
                         decoration: const InputDecoration(
                           labelText: 'Initial Savings',
                           prefixText: '₱ ',
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: descriptionController,
+                        decoration: const InputDecoration(
+                          labelText: 'Description (Optional)',
                         ),
                       ),
                     ],
@@ -155,6 +167,9 @@ class _AddGoalPageState extends State<AddGoalPage> {
                       saved: double.tryParse(savedController.text) ?? 0,
                       imagePath: imageFile?.path,
                       createdAt: DateTime.now(),
+                      description: descriptionController.text.isNotEmpty
+                          ? descriptionController.text
+                          : null,
                     );
 
                     if (isEditing) {
