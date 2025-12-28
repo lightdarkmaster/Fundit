@@ -21,6 +21,9 @@ class _AddGoalPageState extends State<AddGoalPage> {
   File? imageFile;
   final NumberFormat pesoFormatter = NumberFormat('#,##0.00', 'en_PH');
   final ImagePicker picker = ImagePicker();
+  final String timestamp = DateFormat(
+    'MMMM d, y (EEEE, hh:mma)',
+  ).format(DateTime.now()).toLowerCase();
 
   @override
   void initState() {
@@ -151,6 +154,7 @@ class _AddGoalPageState extends State<AddGoalPage> {
                       price: double.tryParse(priceController.text) ?? 0,
                       saved: double.tryParse(savedController.text) ?? 0,
                       imagePath: imageFile?.path,
+                      createdAt: DateTime.now(),
                     );
 
                     if (isEditing) {

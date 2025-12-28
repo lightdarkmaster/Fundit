@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:fundit/pages/dashboard.dart';
 import 'package:fundit/pages/db_helper.dart';
 import 'package:fundit/pages/goal_model.dart';
+import 'package:fundit/pages/history_entry_model.dart';
+import 'package:fundit/pages/history_page.dart';
 import 'add_goal_page.dart';
 import 'goal_detail_page.dart';
 import 'package:intl/intl.dart';
@@ -15,6 +17,8 @@ class Homescreen extends StatefulWidget {
 
 class _HomescreenState extends State<Homescreen> {
   List<Goal> goals = [];
+  List<HistoryEntry> history = [];
+
   // Define color palettes
   final progressColors = [
     Colors.lightBlue,
@@ -74,6 +78,16 @@ class _HomescreenState extends State<Homescreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const DashboardPage()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.history, color: Colors.lightBlue),
+            tooltip: 'Go to History Page',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HistoryPage()),
               );
             },
           ),
@@ -145,14 +159,19 @@ class _HomescreenState extends State<Homescreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Expanded(
-                                child: Text(
-                                  '${goal.name} (₱ ${pesoFormatter.format(goal.price)})',
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${goal.name} (₱ ${pesoFormatter.format(goal.price)})',
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
                                 ),
                               ),
                               PopupMenuButton<String>(
@@ -222,6 +241,18 @@ class _HomescreenState extends State<Homescreen> {
                               ),
                             ],
                           ),
+
+                          if (goal.createdAt != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                'Created: ${DateFormat('MMMM d, y (EEEE, hh:mma)').format(goal.createdAt!).toLowerCase()}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),
