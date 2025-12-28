@@ -23,7 +23,6 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
     goal = widget.goal;
   }
 
-  // Helper function for priority color
   Color getPriorityColor(String? priority) {
     switch (priority?.toLowerCase()) {
       case 'high':
@@ -58,15 +57,47 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ✅ Goal Image
+                    // Goal Image with tap-to-view
                     if (goal.imagePath != null) ...[
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.file(
-                          File(goal.imagePath!),
-                          width: double.infinity,
-                          height: 180,
-                          fit: BoxFit.cover,
+                      GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (_) => Dialog(
+                              backgroundColor: Colors.transparent,
+                              insetPadding: EdgeInsets.all(10),
+                              child: GestureDetector(
+                                onTap: () => Navigator.pop(context),
+                                child: Hero(
+                                  tag: 'goalImage-${goal.id}',
+                                  child: InteractiveViewer(
+                                    panEnabled: true,
+                                    minScale: 0.5,
+                                    maxScale: 3.0,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image.file(
+                                        File(goal.imagePath!),
+                                        fit: BoxFit.contain,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        child: Hero(
+                          tag: 'goalImage-${goal.id}',
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.file(
+                              File(goal.imagePath!),
+                              width: double.infinity,
+                              height: 180,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -89,21 +120,12 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Stack(
-                      children: [
-                        LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 10,
-                          borderRadius: BorderRadius.circular(10),
-                          backgroundColor: const Color.fromARGB(
-                            255,
-                            159,
-                            222,
-                            238,
-                          ),
-                          color: Colors.lightBlue,
-                        ),
-                      ],
+                    LinearProgressIndicator(
+                      value: progress,
+                      minHeight: 10,
+                      borderRadius: BorderRadius.circular(10),
+                      backgroundColor: const Color.fromARGB(255, 159, 222, 238),
+                      color: Colors.lightBlue,
                     ),
 
                     const SizedBox(height: 24),
@@ -118,23 +140,22 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                     _row('Remaining', goal.remaining, highlight: true),
 
                     const SizedBox(height: 24),
-
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue, // Button color
-                          foregroundColor: Colors.white, // Text color
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 16,
-                          ), // Optional: increase height
+                          backgroundColor: goal.remaining <= 0
+                              ? Colors.grey
+                              : Colors.blue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              12,
-                            ), // Rounded corners
+                            borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        onPressed: () => _showAddSavingsDialog(context),
+                        onPressed: goal.remaining <= 0
+                            ? null
+                            : () => _showAddSavingsDialog(context),
                         child: const Text('Add Savings'),
                       ),
                     ),
@@ -143,7 +164,7 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
               ),
             ),
 
-            // Priority banner in the top-right corner
+            // Priority banner
             Positioned(
               right: 0,
               child: Container(
@@ -250,14 +271,14 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
 
                 await DBHelper.instance.updateGoal(updatedGoal);
 
-                // Refresh the current goal from the database
                 final goals = await DBHelper.instance.fetchGoals();
                 final refreshedGoal = goals.firstWhere((g) => g.id == goal.id);
                 setState(() {
                   goal = refreshedGoal;
                 });
 
-                Navigator.pop(context); // Close dialog
+                Navigator.pop(context);
+                Navigator.pop(context, refreshedGoal); // Return to homescreen
               }
             },
             child: const Text('Add'),
