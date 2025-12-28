@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fundit/pages/about_page.dart';
 import 'package:fundit/pages/dashboard.dart';
 import 'package:fundit/pages/db_helper.dart';
 import 'package:fundit/pages/goal_model.dart';
@@ -69,7 +70,6 @@ class _HomescreenState extends State<Homescreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Goals'),
-        // centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.bar_chart, color: Colors.lightBlue),
@@ -91,9 +91,18 @@ class _HomescreenState extends State<Homescreen> {
               );
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.info, color: Colors.lightBlue),
+            tooltip: 'Go to About Page',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AboutPage()),
+              );
+            },
+          ),
         ],
       ),
-
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final newGoal = await Navigator.push<Goal?>(
@@ -110,156 +119,176 @@ class _HomescreenState extends State<Homescreen> {
         backgroundColor: Colors.lightBlue,
       ),
 
-      body: goals.isEmpty
-          ? const Center(
-              child: Text(
-                'No goals yet\nStart saving today',
-                textAlign: TextAlign.center,
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: goals.length,
-              itemBuilder: (_, index) {
-                final goal = goals[index];
-                final progress = (goal.saved / goal.price).clamp(0.0, 1.0);
+      // Use Stack to add background image
+      body: Stack(
+        children: [
+          // Background image
+          SizedBox.expand(
+            child: Image.asset('assets/images/fundit.png', fit: BoxFit.cover),
+          ),
 
-                // Select color based on index for uniqueness
-                final progressColor =
-                    progressColors[index % progressColors.length];
-                final percentColor =
-                    percentageColors[index % percentageColors.length];
-
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(20),
-                    onTap: () async {
-                      final updated = await Navigator.push<Goal?>(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => GoalDetailPage(goal: goal),
-                        ),
+          // Optional overlay for readability
+          Container(
+            color: Colors.white.withOpacity(0.85),
+            child: goals.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No goals yet\nStart saving today',
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: goals.length,
+                    itemBuilder: (_, index) {
+                      final goal = goals[index];
+                      final progress = (goal.saved / goal.price).clamp(
+                        0.0,
+                        1.0,
                       );
 
-                      if (updated != null) {
-                        await _loadGoals();
-                      }
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                      final progressColor =
+                          progressColors[index % progressColors.length];
+                      final percentColor =
+                          percentageColors[index % percentageColors.length];
+
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () async {
+                            final updated = await Navigator.push<Goal?>(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => GoalDetailPage(goal: goal),
+                              ),
+                            );
+
+                            if (updated != null) {
+                              await _loadGoals();
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      '${goal.name} (₱ ${pesoFormatter.format(goal.price)})',
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '${goal.name} (₱ ${pesoFormatter.format(goal.price)})',
+                                            style: const TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
                                       ),
-                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    PopupMenuButton<String>(
+                                      onSelected: (value) {
+                                        if (value == 'edit') {
+                                          _editGoal(goal);
+                                        } else if (value == 'delete') {
+                                          _deleteGoal(goal.id!);
+                                        }
+                                      },
+                                      itemBuilder: (context) => [
+                                        const PopupMenuItem(
+                                          value: 'edit',
+                                          child: Text('Edit'),
+                                        ),
+                                        const PopupMenuItem(
+                                          value: 'delete',
+                                          child: Text('Delete'),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
-                              ),
-                              PopupMenuButton<String>(
-                                onSelected: (value) {
-                                  if (value == 'edit') {
-                                    _editGoal(goal);
-                                  } else if (value == 'delete') {
-                                    _deleteGoal(goal.id!);
-                                  }
-                                },
-                                itemBuilder: (context) => [
-                                  const PopupMenuItem(
-                                    value: 'edit',
-                                    child: Text('Edit'),
-                                  ),
-                                  const PopupMenuItem(
-                                    value: 'delete',
-                                    child: Text('Delete'),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
+                                const SizedBox(height: 8),
 
-                          // Progress bar with unique color and percentage
-                          Row(
-                            children: [
-                              Expanded(
-                                child: LinearProgressIndicator(
-                                  value: progress,
-                                  minHeight: 8,
-                                  borderRadius: BorderRadius.circular(8),
-                                  backgroundColor: progressColor.withOpacity(
-                                    0.3,
+                                // Progress bar with unique color and percentage
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: LinearProgressIndicator(
+                                        value: progress,
+                                        minHeight: 8,
+                                        borderRadius: BorderRadius.circular(8),
+                                        backgroundColor: progressColor
+                                            .withOpacity(0.3),
+                                        color: progressColor,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      '${(progress * 100).toStringAsFixed(0)}%',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: percentColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('Saved: '),
+                                    Text(
+                                      '₱${pesoFormatter.format(goal.saved)}',
+                                      style: const TextStyle(
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                                    Text('Remaining: '),
+                                    Text(
+                                      '₱${pesoFormatter.format(goal.remaining)}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                if (goal.createdAt != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4),
+                                    child: Text(
+                                      'Created: ${DateFormat('MMMM d, y (EEEE, hh:mma)').format(goal.createdAt!).toLowerCase()}',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
                                   ),
-                                  color: progressColor,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '${(progress * 100).toStringAsFixed(0)}%',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: percentColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Saved: '),
-                              Text(
-                                '₱${pesoFormatter.format(goal.saved)}',
-                                style: const TextStyle(color: Colors.green),
-                              ),
-                              Text('Remaining: '),
-                              Text(
-                                '₱${pesoFormatter.format(goal.remaining)}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.red,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          if (goal.createdAt != null)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: Text(
-                                'Created: ${DateFormat('MMMM d, y (EEEE, hh:mma)').format(goal.createdAt!).toLowerCase()}',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
+                              ],
                             ),
-                        ],
-                      ),
-                    ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
+          ),
+        ],
+      ),
     );
   }
 }
