@@ -4,9 +4,6 @@ import 'package:fundit/models/goal_model.dart';
 import 'package:fundit/db/db_helper.dart';
 import 'package:intl/intl.dart';
 
-import 'package:fundit/db/db_helper.dart';
-import 'package:fundit/models/goal_model.dart';
-
 class GoalDetailPage extends StatefulWidget {
   final Goal goal;
 
@@ -26,6 +23,20 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
     goal = widget.goal;
   }
 
+  // Helper function for priority color
+  Color getPriorityColor(String? priority) {
+    switch (priority?.toLowerCase()) {
+      case 'high':
+        return Colors.redAccent;
+      case 'medium':
+        return Colors.orangeAccent;
+      case 'low':
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final progress = (goal.saved / goal.price).clamp(0.0, 1.0);
@@ -35,7 +46,7 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
       appBar: AppBar(title: const Text('Goal Details')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(
+        child: Stack(
           children: [
             Card(
               shape: RoundedRectangleBorder(
@@ -98,6 +109,7 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                     const SizedBox(height: 24),
                     _row('Price', goal.price),
                     _row('Saved', goal.saved),
+                    _rowText('Priority', goal.priority ?? 'Low'),
                     _rowText(
                       'Description',
                       goal.description ?? 'No description',
@@ -127,6 +139,31 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                       ),
                     ),
                   ],
+                ),
+              ),
+            ),
+
+            // Priority banner in the top-right corner
+            Positioned(
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: getPriorityColor(goal.priority),
+                  borderRadius: const BorderRadius.only(
+                    topRight: Radius.circular(20),
+                    bottomLeft: Radius.circular(20),
+                  ),
+                ),
+                child: Text(
+                  (goal.priority ?? 'Low').toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -207,6 +244,8 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                   price: goal.price,
                   saved: goal.saved + addAmount,
                   imagePath: goal.imagePath,
+                  description: goal.description,
+                  priority: goal.priority,
                 );
 
                 await DBHelper.instance.updateGoal(updatedGoal);

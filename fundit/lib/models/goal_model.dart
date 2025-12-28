@@ -6,6 +6,7 @@ class Goal {
   final String? imagePath;
   final DateTime? createdAt;
   final String? description;
+  final String? priority;
 
   Goal({
     this.id,
@@ -15,6 +16,7 @@ class Goal {
     this.imagePath,
     this.createdAt,
     this.description,
+    this.priority,
   });
 
   Map<String, dynamic> toMap() => {
@@ -25,6 +27,7 @@ class Goal {
     'imagePath': imagePath,
     'createdAt': createdAt?.toIso8601String(),
     'description': description,
+    'priority': priority,
   };
 
   factory Goal.fromMap(Map<String, dynamic> map) => Goal(
@@ -37,6 +40,7 @@ class Goal {
         ? DateTime.parse(map['createdAt'])
         : null,
     description: map['description'],
+    priority: map['priority'] ?? 'Low',
   );
 
   double get remaining => price - saved;
