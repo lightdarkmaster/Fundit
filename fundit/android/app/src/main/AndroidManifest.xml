@@ -6,7 +6,7 @@
 
 
     <application
-        android:label="fundit"
+        android:label="Fund It"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
