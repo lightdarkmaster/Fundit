@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fundit/pages/instructions.dart';
 
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
@@ -11,7 +12,28 @@ class _AboutPageState extends State<AboutPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('About')),
+      appBar: AppBar(
+        title: const Text('About'),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.help_outline,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.lightBlue,
+            ),
+            tooltip: 'How to Use This App',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const InstructionsPage(),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: Stack(
         children: [
           // Background Image

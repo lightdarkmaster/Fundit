@@ -63,6 +63,52 @@ class _HomescreenState extends State<Homescreen> {
     await _loadGoals();
   }
 
+  Future<void> _confirmDeleteGoal(Goal goal) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text('Delete Goal'),
+          content: Text(
+            'Are you sure you want to delete "${goal.name}"?\nThis action cannot be undone.',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: isDark ? Colors.white70 : Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      _deleteGoal(goal.id!);
+    }
+  }
+
   void _editGoal(Goal goal) async {
     final updated = await Navigator.push<Goal?>(
       context,
@@ -242,7 +288,7 @@ class _HomescreenState extends State<Homescreen> {
                                       File(goal.imagePath!),
                                       width: double.infinity,
                                       height: 160,
-                                      fit: BoxFit.contain,
+                                      fit: BoxFit.cover,
                                     ),
                                   ),
                                 ),
@@ -400,18 +446,28 @@ class _HomescreenState extends State<Homescreen> {
                       top: 20,
                       child: PopupMenuButton<String>(
                         color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black,
+                            ? Colors.black
+                            : Colors.white,
                         onSelected: (value) {
                           if (value == 'edit') {
                             _editGoal(goal);
                           } else if (value == 'delete') {
-                            _deleteGoal(goal.id!);
+                            // _deleteGoal(goal.id!);
+                            _confirmDeleteGoal(goal);
                           }
                         },
-                        itemBuilder: (context) => const [
-                          PopupMenuItem(value: 'edit', child: Text('Edit')),
-                          PopupMenuItem(value: 'delete', child: Text('Delete')),
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 'edit',
+                            child: Text(
+                              'Edit',
+                              style: TextStyle(color: colorScheme.onSurface),
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Text('Delete'),
+                          ),
                         ],
                       ),
                     ),
