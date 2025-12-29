@@ -7,6 +7,7 @@ class Goal {
   final DateTime? createdAt;
   final String? description;
   final String? priority;
+  final DateTime? estimatedDate;
 
   Goal({
     this.id,
@@ -17,6 +18,7 @@ class Goal {
     this.createdAt,
     this.description,
     this.priority,
+    this.estimatedDate,
   });
 
   Map<String, dynamic> toMap() => {
@@ -28,6 +30,7 @@ class Goal {
     'createdAt': createdAt?.toIso8601String(),
     'description': description,
     'priority': priority,
+    'estimatedDate': estimatedDate?.toIso8601String(),
   };
 
   factory Goal.fromMap(Map<String, dynamic> map) => Goal(
@@ -41,6 +44,9 @@ class Goal {
         : null,
     description: map['description'],
     priority: map['priority'] ?? 'Low',
+    estimatedDate: map['estimatedDate'] != null
+        ? DateTime.parse(map['estimatedDate'])
+        : null,
   );
 
   double get remaining => price - saved;
