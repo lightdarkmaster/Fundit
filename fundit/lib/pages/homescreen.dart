@@ -99,7 +99,9 @@ class _HomescreenState extends State<Homescreen> {
               return IconButton(
                 icon: Icon(
                   mode == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode,
-                  color: Colors.lightBlue,
+                  color: mode == ThemeMode.dark
+                      ? Colors.yellowAccent
+                      : Colors.black87,
                 ),
                 onPressed: () {
                   widget.themeController.toggleTheme();
@@ -109,7 +111,12 @@ class _HomescreenState extends State<Homescreen> {
           ),
 
           IconButton(
-            icon: const Icon(Icons.bar_chart, color: Colors.lightBlue),
+            icon: Icon(
+              Icons.bar_chart,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.lightBlue,
+            ),
             tooltip: 'Go to Dashboard',
             onPressed: () {
               Navigator.push(
@@ -118,8 +125,14 @@ class _HomescreenState extends State<Homescreen> {
               );
             },
           ),
+
           IconButton(
-            icon: const Icon(Icons.history, color: Colors.lightBlue),
+            icon: Icon(
+              Icons.history,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.redAccent
+                  : Colors.green,
+            ),
             tooltip: 'Go to History Page',
             onPressed: () {
               Navigator.push(
@@ -129,7 +142,12 @@ class _HomescreenState extends State<Homescreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.info, color: Colors.lightBlue),
+            icon: Icon(
+              Icons.info,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.lightBlue
+                  : Colors.deepPurple,
+            ),
             tooltip: 'Go to About Page',
             onPressed: () {
               Navigator.push(
