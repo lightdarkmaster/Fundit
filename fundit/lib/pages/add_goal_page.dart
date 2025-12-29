@@ -72,6 +72,7 @@ class _AddGoalPageState extends State<AddGoalPage> {
           child: Column(
             children: [
               Card(
+                color: Theme.of(context).colorScheme.surface,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
