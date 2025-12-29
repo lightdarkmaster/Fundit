@@ -50,7 +50,11 @@ class _DashboardPageState extends State<DashboardPage> {
     double overallProgress = totalPrice == 0 ? 0 : (totalSaved / totalPrice);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Dashboard'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('Dashboard'),
+        centerTitle: true,
+        elevation: 1,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: goals.isEmpty

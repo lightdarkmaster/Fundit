@@ -51,7 +51,7 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('History')),
+      appBar: AppBar(title: const Text('History'), elevation: 1),
       body: Stack(
         children: [
           // 🔹 Background Image

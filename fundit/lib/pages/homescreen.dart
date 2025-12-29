@@ -92,6 +92,7 @@ class _HomescreenState extends State<Homescreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Goals'),
+        elevation: 1,
         actions: [
           ValueListenableBuilder<ThemeMode>(
             valueListenable: widget.themeController.themeNotifier,
