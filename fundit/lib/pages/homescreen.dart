@@ -93,10 +93,18 @@ class _HomescreenState extends State<Homescreen> {
       appBar: AppBar(
         title: const Text('My Goals'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.dark_mode, color: Colors.lightBlue),
-            onPressed: () {
-              widget.themeController.toggleTheme();
+          ValueListenableBuilder<ThemeMode>(
+            valueListenable: widget.themeController.themeNotifier,
+            builder: (context, mode, _) {
+              return IconButton(
+                icon: Icon(
+                  mode == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode,
+                  color: Colors.lightBlue,
+                ),
+                onPressed: () {
+                  widget.themeController.toggleTheme();
+                },
+              );
             },
           ),
 
@@ -255,8 +263,8 @@ class _HomescreenState extends State<Homescreen> {
                                             borderRadius: BorderRadius.circular(
                                               8,
                                             ),
-                                            backgroundColor: progressColor
-                                              ..withValues(alpha: 0.5),
+                                            backgroundColor:
+                                                Colors.grey.shade300,
                                             color: progressColor,
                                           ),
                                         ),
