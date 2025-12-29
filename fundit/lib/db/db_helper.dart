@@ -34,7 +34,8 @@ class DBHelper {
             imagePath TEXT,
             createdAt TEXT,
             description TEXT,
-            priority TEXT
+            priority TEXT,
+            estimatedDate TEXT
           )
         ''');
       },

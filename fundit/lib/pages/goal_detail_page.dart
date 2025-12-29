@@ -16,11 +16,13 @@ class GoalDetailPage extends StatefulWidget {
 class _GoalDetailPageState extends State<GoalDetailPage> {
   static final NumberFormat pesoFormatter = NumberFormat('#,##0.00', 'en_PH');
   late Goal goal;
+  DateTime? estimatedDate;
 
   @override
   void initState() {
     super.initState();
     goal = widget.goal;
+    estimatedDate = goal.estimatedDate;
   }
 
   Color getPriorityColor(String? priority) {
@@ -36,17 +38,228 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
     }
   }
 
+  Map<String, double>? calculateSavingsPlan() {
+    if (estimatedDate == null || goal.remaining <= 0) return null;
+
+    final days = estimatedDate!
+        .difference(DateTime.now())
+        .inDays
+        .clamp(1, 100000);
+
+    return {
+      'Daily': goal.remaining / days,
+      'Weekly': goal.remaining / (days / 7),
+      'Monthly': goal.remaining / (days / 30),
+    };
+  }
+
+  Future<void> _pickEstimatedDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate:
+          estimatedDate ?? DateTime.now().add(const Duration(days: 30)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 10)),
+    );
+
+    if (picked != null) {
+      final updatedGoal = Goal(
+        id: goal.id,
+        name: goal.name,
+        price: goal.price,
+        saved: goal.saved,
+        imagePath: goal.imagePath,
+        description: goal.description,
+        priority: goal.priority,
+        estimatedDate: picked,
+      );
+
+      await DBHelper.instance.updateGoal(updatedGoal);
+
+      setState(() {
+        goal = updatedGoal;
+        estimatedDate = picked;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final progress = (goal.saved / goal.price).clamp(0.0, 1.0);
     final progressPercentage = (progress * 100).toStringAsFixed(0);
+    final savingsPlan = calculateSavingsPlan();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Goal Details')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Stack(
+        child: Column(
           children: [
+            // ===================== MAIN GOAL CARD =====================
+            Stack(
+              children: [
+                Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (goal.imagePath != null) ...[
+                          GestureDetector(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                barrierColor: Colors.black87,
+                                builder: (_) => Dialog(
+                                  backgroundColor: Colors.transparent,
+                                  insetPadding: const EdgeInsets.all(16),
+                                  child: GestureDetector(
+                                    onTap: () => Navigator.pop(
+                                      context,
+                                    ), // tap anywhere to close
+                                    child: InteractiveViewer(
+                                      minScale: 0.5,
+                                      maxScale: 3.0,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(16),
+                                        child: Image.file(
+                                          File(goal.imagePath!),
+                                          fit: BoxFit.contain,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.file(
+                                File(goal.imagePath!),
+                                width: double.infinity,
+                                height: 180,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+                        ],
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Center(
+                            child: Text(
+                              goal.name,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.headlineSmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black87,
+                                  ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Progress',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+                            Text(
+                              '$progressPercentage%',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.cyan,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 10,
+                          borderRadius: BorderRadius.circular(10),
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            159,
+                            222,
+                            238,
+                          ),
+                          color: Colors.lightBlue,
+                        ),
+
+                        const SizedBox(height: 24),
+                        _row('Price', goal.price),
+                        _row('Saved', goal.saved),
+                        _rowText('Priority', goal.priority ?? 'Low'),
+                        _rowText(
+                          'Description',
+                          goal.description ?? 'No description',
+                        ),
+
+                        const Divider(height: 32),
+                        _row('Remaining', goal.remaining, highlight: true),
+
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: goal.remaining <= 0
+                                  ? Colors.grey
+                                  : Colors.blue,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: goal.remaining <= 0
+                                ? null
+                                : () => _showAddSavingsDialog(context),
+                            child: const Text('Add Savings'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                Positioned(
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: getPriorityColor(goal.priority),
+                      borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(20),
+                        bottomLeft: Radius.circular(20),
+                      ),
+                    ),
+                    child: Text(
+                      (goal.priority ?? 'Low').toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
+            // ===================== SAVINGS PLAN CARD =====================
             Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
@@ -54,137 +267,40 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Goal Image with tap-to-view
-                    if (goal.imagePath != null) ...[
-                      GestureDetector(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (_) => Dialog(
-                              backgroundColor: Colors.transparent,
-                              insetPadding: EdgeInsets.all(10),
-                              child: GestureDetector(
-                                onTap: () => Navigator.pop(context),
-                                child: Hero(
-                                  tag: 'goalImage-${goal.id}',
-                                  child: InteractiveViewer(
-                                    panEnabled: true,
-                                    minScale: 0.5,
-                                    maxScale: 3.0,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Image.file(
-                                        File(goal.imagePath!),
-                                        fit: BoxFit.contain,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                        child: Hero(
-                          tag: 'goalImage-${goal.id}',
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.file(
-                              File(goal.imagePath!),
-                              width: double.infinity,
-                              height: 180,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+                    Text(
+                      'Savings Plan',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 12),
 
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Progress',
-                          style: Theme.of(context).textTheme.titleMedium,
+                          estimatedDate == null
+                              ? 'Estimated Date: Not set'
+                              : 'Target Date: ${DateFormat('MMM d, y').format(estimatedDate!)}',
                         ),
-                        Text(
-                          '$progressPercentage%',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.cyan,
-                          ),
+                        TextButton(
+                          onPressed: _pickEstimatedDate,
+                          child: const Text('Set Date'),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    LinearProgressIndicator(
-                      value: progress,
-                      minHeight: 10,
-                      borderRadius: BorderRadius.circular(10),
-                      backgroundColor: const Color.fromARGB(255, 159, 222, 238),
-                      color: Colors.lightBlue,
-                    ),
 
-                    const SizedBox(height: 24),
-                    _row('Price', goal.price),
-                    _row('Saved', goal.saved),
-                    _rowText('Priority', goal.priority ?? 'Low'),
-                    _rowText(
-                      'Description',
-                      goal.description ?? 'No description',
-                    ),
-                    const Divider(height: 32),
-                    _row('Remaining', goal.remaining, highlight: true),
-
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: goal.remaining <= 0
-                              ? Colors.grey
-                              : Colors.blue,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: goal.remaining <= 0
-                            ? null
-                            : () => _showAddSavingsDialog(context),
-                        child: const Text('Add Savings'),
+                    if (savingsPlan != null) ...[
+                      const Divider(height: 24),
+                      ...savingsPlan.entries.map((e) => _row(e.key, e.value)),
+                    ] else ...[
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Set a target date to see your savings breakdown.',
+                        style: TextStyle(color: Colors.grey),
                       ),
-                    ),
+                    ],
                   ],
-                ),
-              ),
-            ),
-
-            // Priority banner
-            Positioned(
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: getPriorityColor(goal.priority),
-                  borderRadius: const BorderRadius.only(
-                    topRight: Radius.circular(20),
-                    bottomLeft: Radius.circular(20),
-                  ),
-                ),
-                child: Text(
-                  (goal.priority ?? 'Low').toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
                 ),
               ),
             ),
@@ -213,23 +329,14 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
     );
   }
 
-  Widget _rowText(String label, String text, {bool highlight = false}) {
+  Widget _rowText(String label, String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label),
-          Flexible(
-            child: Text(
-              text,
-              textAlign: TextAlign.right,
-              style: TextStyle(
-                fontWeight: highlight ? FontWeight.bold : FontWeight.normal,
-                color: highlight ? Colors.green : null,
-              ),
-            ),
-          ),
+          Flexible(child: Text(text, textAlign: TextAlign.right)),
         ],
       ),
     );
@@ -240,7 +347,7 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (_) => AlertDialog(
         title: const Text('Add Savings'),
         content: TextField(
           controller: controller,
@@ -267,23 +374,46 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                   imagePath: goal.imagePath,
                   description: goal.description,
                   priority: goal.priority,
+                  estimatedDate: goal.estimatedDate,
                 );
 
                 await DBHelper.instance.updateGoal(updatedGoal);
 
-                final goals = await DBHelper.instance.fetchGoals();
-                final refreshedGoal = goals.firstWhere((g) => g.id == goal.id);
-                setState(() {
-                  goal = refreshedGoal;
-                });
+                final refreshedGoal = (await DBHelper.instance.fetchGoals())
+                    .firstWhere((g) => g.id == goal.id);
+
+                setState(() => goal = refreshedGoal);
 
                 Navigator.pop(context);
-                Navigator.pop(context, refreshedGoal); // Return to homescreen
+                Navigator.pop(context, refreshedGoal);
               }
             },
             child: const Text('Add'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class FullImagePreview extends StatelessWidget {
+  final String imagePath;
+
+  const FullImagePreview({super.key, required this.imagePath});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: Center(
+        child: Hero(
+          tag: 'goalImage-$imagePath',
+          child: InteractiveViewer(child: Image.file(File(imagePath))),
+        ),
       ),
     );
   }
