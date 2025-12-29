@@ -36,7 +36,8 @@ class _AboutPageState extends State<AboutPage> {
                 children: [
                   // App Title
                   Card(
-                    color: Colors.white.withOpacity(0.9),
+                    // color: Colors.white.withOpacity(0.9),
+                    color: Theme.of(context).colorScheme.surface,
                     elevation: 6,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -138,7 +139,8 @@ class _AboutPageState extends State<AboutPage> {
     required String description,
   }) {
     return Card(
-      color: Colors.white.withOpacity(0.9), // slightly transparent to show bg
+      color: Theme.of(context).colorScheme.surface,
+
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       margin: const EdgeInsets.only(bottom: 16),

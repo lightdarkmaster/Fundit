@@ -11,7 +11,10 @@ import 'goal_detail_page.dart';
 import 'package:intl/intl.dart';
 
 class Homescreen extends StatefulWidget {
-  const Homescreen({super.key});
+  final dynamic themeController;
+
+  // const Homescreen({super.key});
+  const Homescreen({super.key, required this.themeController});
 
   @override
   State<Homescreen> createState() => _HomescreenState();
@@ -20,6 +23,11 @@ class Homescreen extends StatefulWidget {
 class _HomescreenState extends State<Homescreen> {
   List<Goal> goals = [];
   List<HistoryEntry> history = [];
+  String truncateWithEllipsis(int cutoff, String myString) {
+    return (myString.length <= cutoff)
+        ? myString
+        : '${myString.substring(0, cutoff)}…';
+  }
 
   // Define color palettes
   final progressColors = [
@@ -86,6 +94,13 @@ class _HomescreenState extends State<Homescreen> {
         title: const Text('My Goals'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.dark_mode, color: Colors.lightBlue),
+            onPressed: () {
+              widget.themeController.toggleTheme();
+            },
+          ),
+
+          IconButton(
             icon: const Icon(Icons.bar_chart, color: Colors.lightBlue),
             tooltip: 'Go to Dashboard',
             onPressed: () {
@@ -147,16 +162,26 @@ class _HomescreenState extends State<Homescreen> {
                 final progress = (goal.saved / goal.price).clamp(0.0, 1.0);
                 final progressColor =
                     progressColors[index % progressColors.length];
-                final percentColor =
-                    percentageColors[index % percentageColors.length];
+                // final percentColor =
+                //     percentageColors[index % percentageColors.length];
+
+                final colorScheme = Theme.of(context).colorScheme;
+                final isDarkMode =
+                    Theme.of(context).brightness == Brightness.dark;
 
                 return Stack(
                   children: [
                     Card(
-                      color: Colors.white,
+                      color: colorScheme.surface,
                       margin: const EdgeInsets.only(bottom: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
+                        side: isDarkMode
+                            ? BorderSide(
+                                color: Theme.of(context).colorScheme.outline,
+                                width: 1,
+                              )
+                            : BorderSide.none,
                       ),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(20),
@@ -173,43 +198,53 @@ class _HomescreenState extends State<Homescreen> {
                         },
                         child: SizedBox(
                           width: double.infinity,
-                          height: 150,
+                          height: 160,
                           child: Stack(
                             children: [
-                              // Goal image with 50% opacity
+                              // Background image
                               if (goal.imagePath != null)
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(20),
                                   child: Opacity(
-                                    opacity: 0.09,
+                                    opacity:
+                                        Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? 0.05
+                                        : 0.09,
                                     child: Image.file(
                                       File(goal.imagePath!),
                                       width: double.infinity,
-                                      height: 150,
+                                      height: 160,
                                       fit: BoxFit.contain,
                                     ),
                                   ),
                                 ),
 
-                              // Card content
                               Padding(
                                 padding: const EdgeInsets.all(16),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const SizedBox(height: 10),
+
                                     // Goal name
                                     Text(
-                                      '${goal.name} (₱ ${pesoFormatter.format(goal.price)})',
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
+                                      truncateWithEllipsis(
+                                        20, // max number of characters
+                                        '${goal.name} (₱ ${pesoFormatter.format(goal.price)})',
                                       ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: colorScheme.onSurface,
+                                          ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
+
                                     const SizedBox(height: 8),
-                                    // Progress bar
+
                                     // Progress bar + percentage
                                     Row(
                                       children: [
@@ -221,7 +256,7 @@ class _HomescreenState extends State<Homescreen> {
                                               8,
                                             ),
                                             backgroundColor: progressColor
-                                                .withOpacity(0.3),
+                                              ..withValues(alpha: 0.5),
                                             color: progressColor,
                                           ),
                                         ),
@@ -232,9 +267,8 @@ class _HomescreenState extends State<Homescreen> {
                                             vertical: 4,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: Colors.white.withOpacity(
-                                              0.85,
-                                            ),
+                                            color: colorScheme
+                                                .surfaceContainerHighest,
                                             borderRadius: BorderRadius.circular(
                                               12,
                                             ),
@@ -242,9 +276,9 @@ class _HomescreenState extends State<Homescreen> {
                                           child: Text(
                                             '${(progress * 100).toStringAsFixed(0)}%',
                                             style: TextStyle(
-                                              fontSize: 15,
+                                              fontSize: 14,
                                               fontWeight: FontWeight.bold,
-                                              color: progressColor,
+                                              color: colorScheme.onSurface,
                                             ),
                                           ),
                                         ),
@@ -252,15 +286,16 @@ class _HomescreenState extends State<Homescreen> {
                                     ),
 
                                     const SizedBox(height: 8),
-                                    // Saved & remaining
+
+                                    // Saved & Remaining
                                     Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
                                           'Saved:',
-                                          style: const TextStyle(
-                                            color: Colors.black,
+                                          style: TextStyle(
+                                            color: colorScheme.onSurface,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
@@ -271,9 +306,9 @@ class _HomescreenState extends State<Homescreen> {
                                           ),
                                         ),
                                         Text(
-                                          'Remaining: ',
-                                          style: const TextStyle(
-                                            color: Colors.black,
+                                          'Remaining:',
+                                          style: TextStyle(
+                                            color: colorScheme.onSurface,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
@@ -286,6 +321,7 @@ class _HomescreenState extends State<Homescreen> {
                                         ),
                                       ],
                                     ),
+
                                     if (goal.createdAt != null)
                                       Padding(
                                         padding: const EdgeInsets.only(top: 4),
@@ -293,7 +329,7 @@ class _HomescreenState extends State<Homescreen> {
                                           'Created: ${DateFormat('MMMM d, y (EEEE, hh:mma)').format(goal.createdAt!).toLowerCase()}',
                                           style: TextStyle(
                                             fontSize: 11,
-                                            color: Colors.grey.shade600,
+                                            color: colorScheme.onSurfaceVariant,
                                           ),
                                         ),
                                       ),
@@ -305,6 +341,7 @@ class _HomescreenState extends State<Homescreen> {
                         ),
                       ),
                     ),
+
                     // Priority banner
                     Positioned(
                       right: 0,
@@ -333,9 +370,11 @@ class _HomescreenState extends State<Homescreen> {
                     // Edit / Delete menu
                     Positioned(
                       right: 5,
-                      top: 20, // slightly below the priority banner
+                      top: 20,
                       child: PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert, color: Colors.black),
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black,
                         onSelected: (value) {
                           if (value == 'edit') {
                             _editGoal(goal);

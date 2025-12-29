@@ -125,12 +125,11 @@ class _DashboardPageState extends State<DashboardPage> {
                     const SizedBox(height: 24),
 
                     // Progress Bars per Goal
-                    const Text(
+                    Text(
                       'Progress by Goal',
-                      style: TextStyle(
-                        fontSize: 18,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        fontSize: 18,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -154,19 +153,17 @@ class _DashboardPageState extends State<DashboardPage> {
                                 Expanded(
                                   child: Text(
                                     goal.name,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(fontWeight: FontWeight.bold),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                                 Text(
                                   '${(progress * 100).toStringAsFixed(0)}%',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
@@ -397,10 +394,21 @@ class _DashboardPageState extends State<DashboardPage> {
     bool isInteger = false,
     bool isPercentage = false,
   }) {
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Expanded(
       child: Card(
-        color: cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        // Retain custom card color in light mode, use theme surface in dark mode
+        color: isDark ? Theme.of(context).colorScheme.surface : cardColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: isDark
+                ? Colors.white
+                : Colors.transparent, // White border in dark mode
+            width: 0.5,
+          ),
+        ),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -410,8 +418,8 @@ class _DashboardPageState extends State<DashboardPage> {
                 title,
                 style: TextStyle(
                   fontSize: 15,
-                  color: titleColor,
                   fontWeight: FontWeight.w500,
+                  color: titleColor, // Always use the passed color
                 ),
               ),
               const SizedBox(height: 8),
@@ -424,7 +432,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  color: valueColor,
+                  color: valueColor, // Always use the passed color
                 ),
               ),
             ],

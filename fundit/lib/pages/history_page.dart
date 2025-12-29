@@ -76,6 +76,7 @@ class _HistoryPageState extends State<HistoryPage> {
                   itemBuilder: (_, index) {
                     final record = historyRecords[index];
                     return Card(
+                      color: Theme.of(context).colorScheme.surface,
                       margin: const EdgeInsets.only(bottom: 12),
                       elevation: 4,
                       shape: RoundedRectangleBorder(
