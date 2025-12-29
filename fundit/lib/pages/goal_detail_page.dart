@@ -91,7 +91,13 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
     final savingsPlan = calculateSavingsPlan();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Goal Details')),
+      appBar: AppBar(
+        title: Text(
+          '${goal.name} Details',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -215,7 +221,7 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                             ),
 
                             const SizedBox(height: 24),
-                            _row('Price', goal.price),
+                            _row('Goal', goal.price),
                             _row('Saved', goal.saved),
                             _rowText('Priority', goal.priority ?? 'Low'),
                             _rowText(
