@@ -206,7 +206,8 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                         const Divider(height: 32),
                         _row('Remaining', goal.remaining, highlight: true),
 
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 12),
+
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
@@ -224,6 +225,27 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                                 ? null
                                 : () => _showAddSavingsDialog(context),
                             child: const Text('Add Savings'),
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: Colors.redAccent,
+                              foregroundColor: Colors.white,
+                              side: const BorderSide(color: Colors.red),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: goal.saved <= 0
+                                ? null
+                                : () => _showWithdrawSavingsDialog(context),
+                            child: const Text('Withdraw Savings'),
                           ),
                         ),
                       ],
@@ -389,6 +411,66 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
               }
             },
             child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showWithdrawSavingsDialog(BuildContext context) {
+    final controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Withdraw Savings'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            labelText: 'Amount',
+            prefixText: '₱ ',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              final withdrawAmount = double.tryParse(controller.text);
+
+              if (withdrawAmount != null &&
+                  withdrawAmount > 0 &&
+                  withdrawAmount <= goal.saved) {
+                final updatedGoal = Goal(
+                  id: goal.id,
+                  name: goal.name,
+                  price: goal.price,
+                  saved: goal.saved - withdrawAmount, // 👈 deduct here
+                  imagePath: goal.imagePath,
+                  description: goal.description,
+                  priority: goal.priority,
+                  estimatedDate: goal.estimatedDate,
+                );
+
+                await DBHelper.instance.updateGoal(updatedGoal);
+
+                final refreshedGoal = (await DBHelper.instance.fetchGoals())
+                    .firstWhere((g) => g.id == goal.id);
+
+                setState(() => goal = refreshedGoal);
+
+                Navigator.pop(context);
+                Navigator.pop(context, refreshedGoal);
+              }
+            },
+            child: const Text('Withdraw'),
           ),
         ],
       ),
