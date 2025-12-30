@@ -1228,59 +1228,66 @@ Widget _analyticsTab(
         ),
 
         const SizedBox(height: 24),
-        Center(
-          child: Text(
-            'Overall Savings Gauge',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 200,
-          child: RadarChart(
-            RadarChartData(
-              radarShape: RadarShape.polygon, // ✅ polygon (not circle)
-
-              dataSets: [
-                RadarDataSet(
-                  dataEntries: goals.take(5).map((goal) {
-                    return RadarEntry(
-                      value: goal.price == 0
-                          ? 0
-                          : (goal.saved / goal.price) * 100,
-                    );
-                  }).toList(),
-                  borderColor: Colors.blue,
-                  fillColor: Colors.blue.withOpacity(0.3),
-                  entryRadius: 3,
-                  borderWidth: 2,
-                ),
-              ],
-
-              radarBackgroundColor: Colors.transparent,
-              borderData: FlBorderData(show: false),
-
-              radarBorderData: BorderSide(
-                color: Colors.grey.shade300,
-                width: 1,
-              ),
-
-              tickCount: 5, // visual rings
-              ticksTextStyle: const TextStyle(color: Colors.grey, fontSize: 10),
-              tickBorderData: BorderSide(color: Colors.grey.shade300),
-              gridBorderData: BorderSide(color: Colors.grey.shade300),
-
-              titlePositionPercentageOffset: 0.18,
-              getTitle: (index, angle) {
-                if (index >= goals.length || index >= 5) {
-                  return const RadarChartTitle(text: '');
-                }
-                return RadarChartTitle(text: goals[index].name);
-              },
+        if (goals.isNotEmpty) ...[
+          Center(
+            child: Text(
+              'Overall Savings Gauge',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            duration: const Duration(milliseconds: 400),
           ),
-        ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 200,
+            child: RadarChart(
+              RadarChartData(
+                radarShape: goals.length == 5
+                    ? RadarShape.polygon
+                    : RadarShape.circle,
+
+                dataSets: [
+                  RadarDataSet(
+                    dataEntries: goals.take(5).map((goal) {
+                      return RadarEntry(
+                        value: goal.price == 0
+                            ? 0
+                            : (goal.saved / goal.price) * 100,
+                      );
+                    }).toList(),
+                    borderColor: Colors.blue,
+                    fillColor: Colors.blue.withOpacity(0.3),
+                    entryRadius: 3,
+                    borderWidth: 2,
+                  ),
+                ],
+
+                radarBackgroundColor: Colors.transparent,
+                borderData: FlBorderData(show: false),
+
+                radarBorderData: BorderSide(
+                  color: Colors.grey.shade300,
+                  width: 1,
+                ),
+
+                tickCount: 5,
+                ticksTextStyle: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 10,
+                ),
+                tickBorderData: BorderSide(color: Colors.grey.shade300),
+                gridBorderData: BorderSide(color: Colors.grey.shade300),
+
+                titlePositionPercentageOffset: 0.18,
+                getTitle: (index, angle) {
+                  if (index >= goals.length || index >= 5) {
+                    return const RadarChartTitle(text: '');
+                  }
+                  return RadarChartTitle(text: goals[index].name);
+                },
+              ),
+              duration: const Duration(milliseconds: 400),
+            ),
+          ),
+        ],
       ],
     ),
   );
