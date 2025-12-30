@@ -1239,10 +1239,11 @@ Widget _analyticsTab(
           height: 200,
           child: RadarChart(
             RadarChartData(
+              radarShape: RadarShape.polygon, // ✅ polygon (not circle)
+
               dataSets: [
                 RadarDataSet(
-                  dataEntries: goals.map((goal) {
-                    // Each entry is the percentage of saved amount
+                  dataEntries: goals.take(5).map((goal) {
                     return RadarEntry(
                       value: goal.price == 0
                           ? 0
@@ -1255,18 +1256,24 @@ Widget _analyticsTab(
                   borderWidth: 2,
                 ),
               ],
+
               radarBackgroundColor: Colors.transparent,
               borderData: FlBorderData(show: false),
-              radarBorderData: BorderSide(color: Colors.grey.shade300),
-              titlePositionPercentageOffset: 0.2,
-              tickCount: 5,
+
+              radarBorderData: BorderSide(
+                color: Colors.grey.shade300,
+                width: 1,
+              ),
+
+              tickCount: 5, // visual rings
               ticksTextStyle: const TextStyle(color: Colors.grey, fontSize: 10),
               tickBorderData: BorderSide(color: Colors.grey.shade300),
               gridBorderData: BorderSide(color: Colors.grey.shade300),
+
+              titlePositionPercentageOffset: 0.18,
               getTitle: (index, angle) {
-                // Show goal names around the radar
-                if (index < 0 || index >= goals.length) {
-                  return RadarChartTitle(text: '');
+                if (index >= goals.length || index >= 5) {
+                  return const RadarChartTitle(text: '');
                 }
                 return RadarChartTitle(text: goals[index].name);
               },
