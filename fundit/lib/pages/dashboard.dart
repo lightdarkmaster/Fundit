@@ -16,6 +16,8 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   List<Goal> goals = [];
+  int touchedIndex = -1;
+  Offset? tapPosition;
   static final NumberFormat pesoFormatter = NumberFormat('#,##0.00', 'en_PH');
 
   double totalSaved = 0;
@@ -192,42 +194,138 @@ class _DashboardPageState extends State<DashboardPage> {
                     const SizedBox(height: 24),
 
                     // Analytics Section
-                    const Text(
-                      'Analytics Overview',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                    const Center(
+                      child: Text(
+                        'Analytics Overview',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
+
                     const SizedBox(height: 12),
 
                     // Pie Chart
                     SizedBox(
-                      height: 220,
-                      child: PieChart(
-                        PieChartData(
-                          sections: goals.map((goal) {
-                            Color baseColor = Colors
-                                .primaries[goal.id! % Colors.primaries.length];
-                            Color vibrantColor = baseColor;
-                            return PieChartSectionData(
-                              value: goal.saved,
-                              color: vibrantColor,
-                              title:
-                                  '${(goal.saved / goal.price * 100).toStringAsFixed(0)}%',
-                              radius: 60,
-                              titleStyle: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                      height: 350,
+                      child: Stack(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color:
+                                    Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Colors.white
+                                    : Theme.of(context).dividerColor,
+                                width: 1,
                               ),
-                            );
-                          }).toList(),
-                          sectionsSpace: 2,
-                          centerSpaceRadius: 40,
-                        ),
+                            ),
+                            padding: const EdgeInsets.all(12),
+                            child: Stack(
+                              children: [
+                                GestureDetector(
+                                  onTapDown: (details) {
+                                    setState(() {
+                                      tapPosition = details.localPosition;
+                                    });
+                                  },
+                                  child: PieChart(
+                                    PieChartData(
+                                      centerSpaceRadius: 55,
+                                      sectionsSpace: 4,
+                                      pieTouchData: PieTouchData(
+                                        touchCallback: (event, response) {
+                                          setState(() {
+                                            if (!event
+                                                    .isInterestedForInteractions ||
+                                                response == null ||
+                                                response.touchedSection ==
+                                                    null) {
+                                              touchedIndex = -1;
+                                              return;
+                                            }
+                                            touchedIndex = response
+                                                .touchedSection!
+                                                .touchedSectionIndex;
+                                          });
+                                        },
+                                      ),
+                                      sections: goals.asMap().entries.map((
+                                        entry,
+                                      ) {
+                                        final index = entry.key;
+                                        final goal = entry.value;
+
+                                        final progress = goal.price == 0
+                                            ? 0
+                                            : (goal.saved / goal.price).clamp(
+                                                0.0,
+                                                1.0,
+                                              );
+
+                                        final color =
+                                            Colors.primaries[goal.id! %
+                                                Colors.primaries.length];
+
+                                        return PieChartSectionData(
+                                          value: goal.saved,
+                                          color: color.withValues(alpha: 0.85),
+                                          radius: index == touchedIndex
+                                              ? 80
+                                              : 70,
+                                          title:
+                                              '${(progress * 100).toStringAsFixed(0)}%',
+                                          titleStyle: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ),
+
+                                // Center text
+                                Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        'Savings',
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.titleSmall,
+                                      ),
+                                      Text(
+                                        'Overview',
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.labelMedium,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          // Tooltip
+                          if (touchedIndex != -1 && tapPosition != null)
+                            Positioned(
+                              left: tapPosition!.dx - 60,
+                              top: tapPosition!.dy - 70,
+                              child: _touchTooltip(
+                                context,
+                                goals[touchedIndex],
+                              ),
+                            ),
+                        ],
                       ),
                     ),
+
                     const SizedBox(height: 8),
 
                     // Pie Chart Legends
@@ -250,137 +348,302 @@ class _DashboardPageState extends State<DashboardPage> {
                     const SizedBox(height: 24),
 
                     // Bar Chart: Saved Amount per Goal
-                    const Text(
-                      'Saved Amount per Goal',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      height: 200,
-                      child: BarChart(
-                        BarChartData(
-                          alignment: BarChartAlignment.spaceAround,
-                          maxY: goals
-                              .map((g) => g.price)
-                              .reduce((a, b) => a > b ? a : b),
-                          barGroups: goals.asMap().entries.map((entry) {
-                            final goal = entry.value;
-                            Color baseColor = Colors
-                                .primaries[goal.id! % Colors.primaries.length];
-                            Color vibrantColor = baseColor;
-                            return BarChartGroupData(
-                              x: entry.key,
-                              barRods: [
-                                BarChartRodData(
-                                  toY: goal.saved,
-                                  color: vibrantColor,
-                                  width: 20,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                              ],
-                            );
-                          }).toList(),
-                          titlesData: FlTitlesData(
-                            bottomTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                getTitlesWidget: (value, meta) {
-                                  int index = value.toInt();
-                                  if (index < 0 || index >= goals.length) {
-                                    return const SizedBox.shrink();
-                                  }
-                                  return SideTitleWidget(
-                                    meta: meta,
-                                    space: 4,
-                                    child: Text(
-                                      goals[index].name,
-                                      style: const TextStyle(fontSize: 10),
-                                      overflow: TextOverflow.ellipsis,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  );
-                                },
-                                reservedSize: 40,
-                              ),
-                            ),
-                            leftTitles: AxisTitles(
-                              sideTitles: SideTitles(showTitles: true),
-                            ),
-                          ),
-                          borderData: FlBorderData(show: false),
+                    const Center(
+                      child: Text(
+                        'Saved Amount per Goal',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
+
+                    const SizedBox(height: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white
+                              : Theme.of(context).dividerColor,
+                          width: 1,
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: SizedBox(
+                          height: 350,
+                          child: BarChart(
+                            BarChartData(
+                              alignment: BarChartAlignment.spaceAround,
+                              maxY: goals.isNotEmpty
+                                  ? goals
+                                            .map((g) => g.price)
+                                            .reduce((a, b) => a > b ? a : b) *
+                                        1.1
+                                  : 1, // Add 10% padding at top
+                              gridData: FlGridData(
+                                show: true,
+                                drawVerticalLine: false,
+                                horizontalInterval: goals.isNotEmpty
+                                    ? goals
+                                              .map((g) => g.price)
+                                              .reduce((a, b) => a > b ? a : b) /
+                                          4
+                                    : 1,
+                              ),
+                              barTouchData: BarTouchData(
+                                enabled: true,
+                                touchTooltipData: BarTouchTooltipData(
+                                  tooltipBorderRadius: BorderRadius.circular(8),
+                                  tooltipPadding: const EdgeInsets.all(12),
+                                  getTooltipItem:
+                                      (group, groupIndex, rod, rodIndex) {
+                                        final goal = goals[group.x.toInt()];
+                                        return BarTooltipItem(
+                                          '${goal.name}\n',
+                                          const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                          children: [
+                                            TextSpan(
+                                              text:
+                                                  'Saved: ₱${pesoFormatter.format(goal.saved)}',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.normal,
+                                                color: Colors.white70,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                ),
+                              ),
+                              barGroups: goals.asMap().entries.map((entry) {
+                                final goal = entry.value;
+                                final color =
+                                    Colors.primaries[goal.id! %
+                                        Colors.primaries.length];
+                                return BarChartGroupData(
+                                  x: entry.key,
+                                  barRods: [
+                                    BarChartRodData(
+                                      toY: goal.saved,
+                                      color: color,
+                                      width: 18,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
+                              titlesData: FlTitlesData(
+                                bottomTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: true,
+                                    reservedSize: 42,
+                                    getTitlesWidget: (value, meta) {
+                                      int index = value.toInt();
+                                      if (index < 0 || index >= goals.length) {
+                                        return const SizedBox.shrink();
+                                      }
+
+                                      // Show every 2nd label if too many goals
+                                      if (goals.length > 8 && index % 2 != 0) {
+                                        return const SizedBox.shrink();
+                                      }
+
+                                      return SideTitleWidget(
+                                        meta: meta,
+                                        space: 6,
+                                        child: Text(
+                                          goals[index].name,
+                                          style: const TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                leftTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: false,
+                                    reservedSize: 50,
+                                    interval: goals.isNotEmpty
+                                        ? goals
+                                                  .map((g) => g.price)
+                                                  .reduce(
+                                                    (a, b) => a > b ? a : b,
+                                                  ) /
+                                              4
+                                        : 1,
+                                    getTitlesWidget: (value, meta) {
+                                      return SideTitleWidget(
+                                        meta: meta,
+                                        space: 6,
+                                        child: Text(
+                                          pesoFormatter.format(value),
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                              borderData: FlBorderData(show: false),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
                     const SizedBox(height: 24),
 
                     // Line Chart: Trend of Total Saved
-                    const Text(
-                      'Savings Trend',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      height: 200,
-                      child: LineChart(
-                        LineChartData(
-                          lineBarsData: [
-                            LineChartBarData(
-                              spots: goals
-                                  .asMap()
-                                  .entries
-                                  .map(
-                                    (entry) => FlSpot(
-                                      entry.key.toDouble(),
-                                      entry.value.saved,
-                                    ),
-                                  )
-                                  .toList(),
-                              isCurved: true,
-                              barWidth: 3,
-                              dotData: FlDotData(show: true),
-                              belowBarData: BarAreaData(
-                                show: true,
-                                color: Colors.lightBlue.withOpacity(0.3),
-                              ),
-                              color: Colors.lightBlueAccent,
-                            ),
-                          ],
-                          titlesData: FlTitlesData(
-                            bottomTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                getTitlesWidget: (value, meta) {
-                                  int index = value.toInt();
-                                  if (index < 0 || index >= goals.length) {
-                                    return const SizedBox.shrink();
-                                  }
-                                  return SideTitleWidget(
-                                    meta: meta,
-                                    space: 4,
-                                    child: Text(
-                                      goals[index].name,
-                                      style: const TextStyle(fontSize: 10),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  );
-                                },
-                                reservedSize: 40,
-                              ),
-                            ),
-                            leftTitles: AxisTitles(
-                              sideTitles: SideTitles(showTitles: true),
-                            ),
-                          ),
-                          borderData: FlBorderData(show: true),
+                    const Center(
+                      child: Text(
+                        'Savings Trend',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
+
+                    const SizedBox(height: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white70
+                              : Colors.grey,
+                          width: 1,
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: SizedBox(
+                          height: 350,
+                          child: LineChart(
+                            LineChartData(
+                              lineBarsData: [
+                                LineChartBarData(
+                                  spots: goals.asMap().entries.map((entry) {
+                                    return FlSpot(
+                                      entry.key.toDouble(),
+                                      entry.value.saved,
+                                    );
+                                  }).toList(),
+                                  isCurved: true,
+                                  barWidth: 3,
+                                  dotData: FlDotData(show: true),
+                                  belowBarData: BarAreaData(
+                                    show: true,
+                                    color: Colors.lightBlue.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                  ),
+                                  color: Colors.lightBlueAccent,
+                                ),
+                              ],
+
+                              titlesData: FlTitlesData(
+                                bottomTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: true,
+                                    reservedSize: 42,
+                                    getTitlesWidget: (value, meta) {
+                                      int index = value.toInt();
+                                      if (index < 0 || index >= goals.length) {
+                                        return const SizedBox.shrink();
+                                      }
+                                      if (goals.length > 10 && index % 2 != 0) {
+                                        return const SizedBox.shrink();
+                                      }
+
+                                      return SideTitleWidget(
+                                        meta: meta,
+                                        space: 6,
+                                        child: Transform.rotate(
+                                          angle: -0.5,
+                                          child: Text(
+                                            goals[index].name,
+                                            style: const TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                leftTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: true,
+                                    reservedSize: 50,
+                                    interval: goals.isNotEmpty
+                                        ? goals
+                                                  .map((g) => g.saved)
+                                                  .reduce(
+                                                    (a, b) => a > b ? a : b,
+                                                  ) /
+                                              4
+                                        : 1,
+                                    getTitlesWidget: (value, meta) {
+                                      return SideTitleWidget(
+                                        meta: meta,
+                                        space: 6,
+                                        child: Text(
+                                          pesoFormatter.format(value),
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+
+                              gridData: FlGridData(
+                                show: true,
+                                drawVerticalLine: true,
+                                horizontalInterval: goals.isNotEmpty
+                                    ? goals
+                                              .map((g) => g.saved)
+                                              .reduce((a, b) => a > b ? a : b) /
+                                          4
+                                    : 1,
+                              ),
+
+                              borderData: FlBorderData(show: false),
+
+                              minY: 0,
+                              maxY: goals.isNotEmpty
+                                  ? goals
+                                            .map((g) => g.saved)
+                                            .reduce((a, b) => a > b ? a : b) *
+                                        1.1
+                                  : 1,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -445,4 +708,37 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     );
   }
+}
+
+Widget _touchTooltip(BuildContext context, Goal goal) {
+  final progress = goal.price == 0 ? 0 : (goal.saved / goal.price) * 100;
+  var pesoFormatter = NumberFormat('#,##0.00', 'en_PH');
+  return Material(
+    elevation: 5,
+    borderRadius: BorderRadius.circular(8),
+    color: Theme.of(context).colorScheme.surface,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            goal.name,
+            style: Theme.of(
+              context,
+            ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '₱${pesoFormatter.format(goal.saved)}',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          Text(
+            '${progress.toStringAsFixed(0)}%',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+      ),
+    ),
+  );
 }

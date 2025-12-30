@@ -388,7 +388,6 @@ class _HomescreenState extends State<Homescreen> {
                                         Text(
                                           '₱${pesoFormatter.format(goal.remaining)}',
                                           style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
                                             color: Colors.red,
                                           ),
                                         ),
