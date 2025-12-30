@@ -516,7 +516,7 @@ class _DashboardPageState extends State<DashboardPage>
                                             return const SizedBox.shrink();
                                           }
 
-                                          // Show every 2nd label if too many goals
+                                          // Optional: Show every 2nd label if too many goals
                                           if (goals.length > 8 &&
                                               index % 2 != 0) {
                                             return const SizedBox.shrink();
@@ -525,19 +525,23 @@ class _DashboardPageState extends State<DashboardPage>
                                           return SideTitleWidget(
                                             meta: meta,
                                             space: 6,
-                                            child: Text(
-                                              goals[index].name,
-                                              style: const TextStyle(
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w500,
+                                            child: Transform.rotate(
+                                              angle: -0.5, // slant the text
+                                              child: Text(
+                                                goals[index].name,
+                                                style: const TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                                textAlign: TextAlign.center,
                                               ),
-                                              overflow: TextOverflow.ellipsis,
-                                              textAlign: TextAlign.center,
                                             ),
                                           );
                                         },
                                       ),
                                     ),
+
                                     leftTitles: AxisTitles(
                                       sideTitles: SideTitles(
                                         showTitles: false,
@@ -551,14 +555,32 @@ class _DashboardPageState extends State<DashboardPage>
                                                   4
                                             : 1,
                                         getTitlesWidget: (value, meta) {
+                                          int index = value.toInt();
+                                          if (index < 0 ||
+                                              index >= goals.length) {
+                                            return const SizedBox.shrink();
+                                          }
+
+                                          // Show every 2nd label if too many goals
+                                          if (goals.length > 8 &&
+                                              index % 2 != 0) {
+                                            return const SizedBox.shrink();
+                                          }
+
                                           return SideTitleWidget(
                                             meta: meta,
                                             space: 6,
-                                            child: Text(
-                                              pesoFormatter.format(value),
-                                              style: const TextStyle(
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w500,
+                                            child: Transform.rotate(
+                                              angle:
+                                                  -0.8, // Rotate counter-clockwise, adjust as needed (radians)
+                                              child: Text(
+                                                goals[index].name,
+                                                style: const TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                                textAlign: TextAlign.center,
                                               ),
                                             ),
                                           );
