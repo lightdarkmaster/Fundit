@@ -17,7 +17,7 @@ class _AboutPageState extends State<AboutPage> {
         actions: [
           IconButton(
             icon: Icon(
-              Icons.help_outline,
+              Icons.my_library_books,
               color: Theme.of(context).brightness == Brightness.dark
                   ? Colors.white
                   : Colors.lightBlue,
