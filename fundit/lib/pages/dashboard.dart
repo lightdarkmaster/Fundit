@@ -4,9 +4,6 @@ import 'package:fundit/models/goal_model.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-import 'package:fundit/db/db_helper.dart';
-import 'package:fundit/models/goal_model.dart';
-
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
 
@@ -940,7 +937,6 @@ Widget _analyticsTab(
   );
 
   double totalSaved = goals.fold(0, (sum, g) => sum + g.saved);
-  double totalPrice = goals.fold(0, (sum, g) => sum + g.price);
 
   return SingleChildScrollView(
     padding: const EdgeInsets.all(16),

@@ -131,7 +131,7 @@ class _AddGoalPageState extends State<AddGoalPage> {
                       const SizedBox(height: 16),
 
                       DropdownButtonFormField<String>(
-                        value: selectedPriority,
+                        initialValue: selectedPriority,
                         decoration: const InputDecoration(
                           labelText: 'Priority Level',
                           border: OutlineInputBorder(),

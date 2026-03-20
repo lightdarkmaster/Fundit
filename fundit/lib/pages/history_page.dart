@@ -63,7 +63,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
           // 🔹 Optional overlay for readability
           Positioned.fill(
-            child: Container(color: Colors.white.withOpacity(0.85)),
+            child: Container(color: Colors.white.withValues(alpha: 0.85)),
           ),
 
           // 🔹 Content
