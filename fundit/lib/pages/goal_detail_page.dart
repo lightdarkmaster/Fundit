@@ -135,9 +135,7 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                                       backgroundColor: Colors.transparent,
                                       insetPadding: const EdgeInsets.all(16),
                                       child: GestureDetector(
-                                        onTap: () => Navigator.pop(
-                                          context,
-                                        ), // tap anywhere to close
+                                        onTap: () => Navigator.pop(context),
                                         child: InteractiveViewer(
                                           minScale: 0.5,
                                           maxScale: 3.0,
@@ -165,7 +163,6 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                                   ),
                                 ),
                               ),
-
                               const SizedBox(height: 16),
                             ],
                             Padding(
@@ -186,7 +183,6 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                                 ),
                               ),
                             ),
-
                             const SizedBox(height: 16),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -219,7 +215,6 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                               ),
                               color: Colors.lightBlue,
                             ),
-
                             const SizedBox(height: 24),
                             _row('Goal', goal.price),
                             _row('Saved', goal.saved),
@@ -228,12 +223,9 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                               'Description',
                               goal.description ?? 'No description',
                             ),
-
                             const Divider(height: 32),
                             _row('Remaining', goal.remaining, highlight: true),
-
                             const SizedBox(height: 12),
-
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
@@ -255,9 +247,7 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                                 child: const Text('Add Savings'),
                               ),
                             ),
-
                             const SizedBox(height: 10),
-
                             SizedBox(
                               width: double.infinity,
                               child: OutlinedButton(
@@ -284,7 +274,6 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                     );
                   },
                 ),
-
                 Positioned(
                   right: 0,
                   child: Container(
@@ -310,9 +299,7 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                 ),
               ],
             ),
-
             const SizedBox(height: 20),
-
             // ===================== SAVINGS PLAN CARD =====================
             Builder(
               builder: (context) {
@@ -338,7 +325,6 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         const SizedBox(height: 12),
-
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -353,7 +339,6 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                             ),
                           ],
                         ),
-
                         if (savingsPlan != null) ...[
                           const Divider(height: 24),
                           ...savingsPlan.entries.map(
@@ -420,6 +405,7 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
+          autofocus: true,
           decoration: const InputDecoration(
             labelText: 'Amount',
             prefixText: '₱ ',
@@ -448,13 +434,17 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
 
                 await DBHelper.instance.updateGoal(updatedGoal);
 
+                // Refresh data from DB to ensure UI is accurate
                 final refreshedGoal = (await DBHelper.instance.fetchGoals())
                     .firstWhere((g) => g.id == goal.id);
 
                 setState(() => goal = refreshedGoal);
 
-                Navigator.pop(context);
-                Navigator.pop(context, refreshedGoal);
+                if (mounted) {
+                  Navigator.pop(context);
+                  // Pass back the updated goal to the previous screen if needed
+                  // Navigator.pop(context, refreshedGoal);
+                }
               }
             },
             child: const Text('Add'),
@@ -474,6 +464,7 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
+          autofocus: true,
           decoration: const InputDecoration(
             labelText: 'Amount',
             prefixText: '₱ ',
@@ -499,7 +490,7 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                   id: goal.id,
                   name: goal.name,
                   price: goal.price,
-                  saved: goal.saved - withdrawAmount, // 👈 deduct here
+                  saved: goal.saved - withdrawAmount,
                   imagePath: goal.imagePath,
                   description: goal.description,
                   priority: goal.priority,
@@ -514,36 +505,14 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
 
                 setState(() => goal = refreshedGoal);
 
-                Navigator.pop(context);
-                Navigator.pop(context, refreshedGoal);
+                if (mounted) {
+                  Navigator.pop(context);
+                }
               }
             },
             child: const Text('Withdraw'),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class FullImagePreview extends StatelessWidget {
-  final String imagePath;
-
-  const FullImagePreview({super.key, required this.imagePath});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: Center(
-        child: Hero(
-          tag: 'goalImage-$imagePath',
-          child: InteractiveViewer(child: Image.file(File(imagePath))),
-        ),
       ),
     );
   }
