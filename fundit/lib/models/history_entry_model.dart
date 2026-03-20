@@ -9,3 +9,4 @@ class HistoryEntry {
     required this.timestamp,
   });
 }
+  

@@ -1240,21 +1240,32 @@ Widget _analyticsTab(
             height: 200,
             child: RadarChart(
               RadarChartData(
-                radarShape: goals.length == 5
+                // Ensure we always have a consistent shape logic
+                radarShape: goals.length >= 3
                     ? RadarShape.polygon
                     : RadarShape.circle,
 
                 dataSets: [
                   RadarDataSet(
-                    dataEntries: goals.take(5).map((goal) {
-                      return RadarEntry(
-                        value: goal.price == 0
-                            ? 0
-                            : (goal.saved / goal.price) * 100,
-                      );
-                    }).toList(),
+                    dataEntries: List.generate(
+                      goals.length < 3
+                          ? 3
+                          : (goals.length > 5 ? 5 : goals.length),
+                      (index) {
+                        if (index < goals.length) {
+                          final goal = goals[index];
+                          return RadarEntry(
+                            value: goal.price == 0
+                                ? 0
+                                : (goal.saved / goal.price) * 100,
+                          );
+                        }
+                        // Fill the rest with 0 to keep the chart valid
+                        return const RadarEntry(value: 0);
+                      },
+                    ),
                     borderColor: Colors.blue,
-                    fillColor: Colors.blue.withOpacity(0.3),
+                    fillColor: Colors.blue.withValues(alpha: 0.3),
                     entryRadius: 3,
                     borderWidth: 2,
                   ),
@@ -1278,10 +1289,12 @@ Widget _analyticsTab(
 
                 titlePositionPercentageOffset: 0.18,
                 getTitle: (index, angle) {
-                  if (index >= goals.length || index >= 5) {
-                    return const RadarChartTitle(text: '');
+                  // Check if the index corresponds to an actual goal
+                  if (index < goals.length && index < 5) {
+                    return RadarChartTitle(text: goals[index].name);
                   }
-                  return RadarChartTitle(text: goals[index].name);
+                  // Return empty title for padded values
+                  return const RadarChartTitle(text: '');
                 },
               ),
               duration: const Duration(milliseconds: 400),

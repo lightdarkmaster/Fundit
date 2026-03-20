@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "D:/Fundit/fundit/windows"
+    "cmake.sourceDirectory": "D:/Fundit/fundit/windows",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }
