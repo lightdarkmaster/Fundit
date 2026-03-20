@@ -259,15 +259,13 @@ class _HomescreenState extends State<Homescreen> {
                       child: InkWell(
                         borderRadius: BorderRadius.circular(20),
                         onTap: () async {
-                          final updated = await Navigator.push<Goal?>(
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => GoalDetailPage(goal: goal),
                             ),
                           );
-                          if (updated != null) {
-                            await _loadGoals();
-                          }
+                          await _loadGoals();
                         },
                         child: SizedBox(
                           width: double.infinity,

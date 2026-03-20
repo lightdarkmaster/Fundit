@@ -439,11 +439,11 @@ class _GoalDetailPageState extends State<GoalDetailPage> {
                     .firstWhere((g) => g.id == goal.id);
 
                 setState(() => goal = refreshedGoal);
-
                 if (mounted) {
-                  Navigator.pop(context);
-                  // Pass back the updated goal to the previous screen if needed
-                  // Navigator.pop(context, refreshedGoal);
+                  Navigator.pop(
+                    context,
+                    true,
+                  ); // true means "I changed something"
                 }
               }
             },

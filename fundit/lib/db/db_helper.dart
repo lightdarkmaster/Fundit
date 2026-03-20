@@ -1,10 +1,7 @@
 import 'package:sqflite/sqflite.dart';
-import '../models/goal_model.dart';
-import 'package:path/path.dart';
 import 'package:path/path.dart' as p;
-
 import 'package:fundit/models/goal_model.dart';
-import 'package:fundit/models/history_entry_model.dart';
+// import 'package:fundit/models/history_entry_model.dart'; // Keep this if you use it later
 
 class DBHelper {
   static final DBHelper instance = DBHelper._init();
@@ -42,7 +39,6 @@ class DBHelper {
     );
   }
 
-  // Insert new goal
   Future<int> insertGoal(Goal goal) async {
     final db = await database;
     return await db.insert(
@@ -52,7 +48,6 @@ class DBHelper {
     );
   }
 
-  // Update existing goal
   Future<int> updateGoal(Goal goal) async {
     final db = await database;
     return await db.update(
@@ -63,13 +58,11 @@ class DBHelper {
     );
   }
 
-  // Delete a goal
   Future<int> deleteGoal(int id) async {
     final db = await database;
     return await db.delete('goals', where: 'id = ?', whereArgs: [id]);
   }
 
-  // Fetch all goals
   Future<List<Goal>> fetchGoals() async {
     final db = await database;
     final result = await db.query('goals', orderBy: 'id DESC');

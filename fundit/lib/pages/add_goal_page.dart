@@ -6,9 +6,6 @@ import 'package:fundit/db/db_helper.dart';
 import 'package:fundit/models/goal_model.dart';
 import 'package:intl/intl.dart';
 
-import 'package:fundit/db/db_helper.dart';
-import 'package:fundit/models/goal_model.dart';
-
 class AddGoalPage extends StatefulWidget {
   final Goal? goal; // nullable for new goal
 

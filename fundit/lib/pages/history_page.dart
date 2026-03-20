@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:fundit/db/db_helper.dart';
-import 'package:fundit/models/goal_model.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
