@@ -1,5 +1,9 @@
 # fundit
 
+## Started on December 28, 2025
+## Release on December 31, 2025
+
+
 A new Flutter project.
 
 ## Getting Started
